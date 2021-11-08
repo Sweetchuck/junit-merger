@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+    <testsuite name="A" file="/a.php" tests="1" assertions="9" errors="0" warnings="0" failures="0" skipped="0" time="10">
+        <testcase name="testA" class="A" classname="A" file="/a.php" line="8" assertions="9" time="10" />
+    </testsuite>
+    <testsuite name="B" file="/b.php" tests="1" assertions="11" errors="0" warnings="0" failures="0" skipped="0" time="14">
+        <testcase name="testB" class="B" classname="B" file="/b.php" line="13" assertions="11" time="14" />
+    </testsuite>
+</testsuites>

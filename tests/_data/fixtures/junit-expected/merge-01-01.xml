@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="2" assertions="18" errors="0" warnings="0" failures="0" skipped="0" time="20">
+    <testsuite name="01-01" file="/01-01.php" tests="2" assertions="18" errors="0" warnings="0" failures="0" skipped="0" time="20">
+        <testcase name="test01" class="01-01" classname="01-01" file="/01-01.php" line="8" assertions="9" time="10"/>
+        <testcase name="test02" class="01-01" classname="01-01" file="/01-01.php" line="8" assertions="9" time="10"/>
+    </testsuite>
+</testsuites>
