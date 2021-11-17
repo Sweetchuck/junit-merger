@@ -69,11 +69,7 @@ abstract class JunitMergerBase implements JunitMergerInterface
     public function addXmlFiles(\Iterator $xmlFiles)
     {
         while ($xmlFiles->valid()) {
-            $xmlFile = rtrim($xmlFiles->current(), "\r\n");
-            if ($xmlFile !== '') {
-                $this->addXmlFile($xmlFile);
-            }
-
+            $this->addXmlFile($xmlFiles->current());
             $xmlFiles->next();
         }
 
@@ -85,12 +81,17 @@ abstract class JunitMergerBase implements JunitMergerInterface
      */
     public function addXmlFile($xmlFile)
     {
-        $filename = $xmlFile instanceof \SplFileInfo ? $xmlFile->getPathname() : $xmlFile;
+        $filename = $xmlFile instanceof \SplFileInfo ? $xmlFile->getPathname() : rtrim($xmlFile, "\r\n");
         $filename = preg_replace(
             '@^/proc/self/fd/(?P<id>\d+)$@',
             'php://fd/$1',
             $filename,
         );
+
+        if ($filename === '') {
+            return $this;
+        }
+
         $this->addXmlString(file_get_contents($filename));
 
         return $this;
