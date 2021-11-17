@@ -19,7 +19,7 @@ abstract class JunitMergerTestBase extends Unit
             'basic' => [
                 file_get_contents("$fixturesDir/junit-expected/a-b.xml"),
                 new \ArrayIterator([
-                    "$fixturesDir/junit/a.xml",
+                    new \SplFileObject("$fixturesDir/junit/a.xml"),
                     "$fixturesDir/junit/empty-long-new-line.xml",
                     "$fixturesDir/junit/empty-long-same-line.xml",
                     "$fixturesDir/junit/empty-short-space.xml",
@@ -35,8 +35,9 @@ abstract class JunitMergerTestBase extends Unit
         $cases = $this->casesMergeXmlFiles();
         foreach ($cases as &$case) {
             $strings = [];
+            /** @var string|\SplFileInfo $filename */
             foreach ($case[1] as $filename) {
-                $strings[] = file_get_contents($filename);
+                $strings[] = file_get_contents(is_string($filename) ? $filename : $filename->getPathname());
             }
             $case[1] = new \ArrayIterator($strings);
         }
@@ -47,7 +48,7 @@ abstract class JunitMergerTestBase extends Unit
     /**
      * @dataProvider casesMergeXmlFiles
      */
-    public function testMergeXmlFiles(string $expected, iterable $xmlFiles)
+    public function testMergeXmlFiles(string $expected, \Iterator $xmlFiles)
     {
         $merger = $this->createInstance();
 
@@ -70,7 +71,7 @@ abstract class JunitMergerTestBase extends Unit
     /**
      * @dataProvider casesMergeXmlStrings
      */
-    public function testMergeXmlStrings(string $expected, iterable $xmlStrings)
+    public function testMergeXmlStrings(string $expected, \Iterator $xmlStrings)
     {
         $merger = $this->createInstance();
 
