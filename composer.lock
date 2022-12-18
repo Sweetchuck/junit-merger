@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "07384e884ed2919176a23ee019ede542",
+    "content-hash": "4c432156404376be79b1ed824a6afb47",
     "packages": [
         {
             "name": "psr/container",
@@ -2218,16 +2218,16 @@
         },
         {
             "name": "nuvoleweb/robo-config",
-            "version": "3.x-dev",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Sweetchuck/robo-config.git",
-                "reference": "3c00866b24512bc64b96ad54ad5b1174bb8287c4"
+                "url": "https://github.com/nuvoleweb/robo-config.git",
+                "reference": "ca3a724121c171c60d84ace8051d09e99abb9ed0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Sweetchuck/robo-config/zipball/3c00866b24512bc64b96ad54ad5b1174bb8287c4",
-                "reference": "3c00866b24512bc64b96ad54ad5b1174bb8287c4",
+                "url": "https://api.github.com/repos/nuvoleweb/robo-config/zipball/ca3a724121c171c60d84ace8051d09e99abb9ed0",
+                "reference": "ca3a724121c171c60d84ace8051d09e99abb9ed0",
                 "shasum": ""
             },
             "require": {
@@ -2235,16 +2235,17 @@
             },
             "require-dev": {
                 "drupal/coder": "^8",
-                "phpro/grumphp": "^0.22",
-                "phpunit/phpunit": "^7"
+                "phpro/grumphp": "^1.2",
+                "phpunit/phpunit": "^9.4"
             },
             "type": "robo-tasks",
             "autoload": {
                 "psr-4": {
-                    "NuvoleWeb\\Robo\\Task\\Config\\": "src/",
-                    "NuvoleWeb\\Robo\\Tests\\": "tests/"
+                    "NuvoleWeb\\Robo\\Tests\\": "./tests/",
+                    "NuvoleWeb\\Robo\\Task\\Config\\": "./src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "GPL-2.0-or-later"
             ],
@@ -2256,9 +2257,10 @@
             ],
             "description": "CI/developer-friendly configuration processor for Robo.",
             "support": {
-                "source": "https://github.com/Sweetchuck/robo-config/tree/3.x"
+                "issues": "https://github.com/nuvoleweb/robo-config/issues",
+                "source": "https://github.com/nuvoleweb/robo-config/tree/2.0.0"
             },
-            "time": "2021-09-27T18:30:15+00:00"
+            "time": "2022-01-12T09:43:01+00:00"
         },
         {
             "name": "phar-io/manifest",
