@@ -48,7 +48,7 @@ abstract class JunitMergerTestBase extends Unit
     /**
      * @dataProvider casesMergeXmlFiles
      */
-    public function testMergeXmlFiles(string $expected, \Iterator $xmlFiles)
+    public function testMergeXmlFiles(string $expected, \Iterator $xmlFiles): void
     {
         $merger = $this->createInstance();
 
@@ -71,7 +71,7 @@ abstract class JunitMergerTestBase extends Unit
     /**
      * @dataProvider casesMergeXmlStrings
      */
-    public function testMergeXmlStrings(string $expected, \Iterator $xmlStrings)
+    public function testMergeXmlStrings(string $expected, \Iterator $xmlStrings): void
     {
         $merger = $this->createInstance();
 
