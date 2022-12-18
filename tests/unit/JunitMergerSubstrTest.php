@@ -21,7 +21,7 @@ class JunitMergerSubstrTest extends JunitMergerTestBase
         return new JunitMergerSubstr();
     }
 
-    public function casesDetectHeaderFooterLength()
+    public function casesDetectHeaderFooterLength(): array
     {
         $dir = codecept_data_dir('fixtures/junit');
         $cases = [
@@ -66,7 +66,7 @@ class JunitMergerSubstrTest extends JunitMergerTestBase
     /**
      * @dataProvider casesDetectHeaderFooterLength
      */
-    public function testDetectHeaderFooterLength(array $expected, string $xmlString)
+    public function testDetectHeaderFooterLength(array $expected, string $xmlString): void
     {
         $merger = $this->createInstance();
 
