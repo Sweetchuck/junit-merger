@@ -32,7 +32,7 @@
     "require": {
         "php": ">=7.4",
         "ext-dom": "*",
-        "symfony/console": "^4.4 || ^5.1"
+        "symfony/console": "^4.4 || ^5.1 || ^6.0"
     },
     "require-dev": {
         "ext-json": "*",
