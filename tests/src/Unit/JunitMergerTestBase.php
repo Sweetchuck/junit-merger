@@ -4,21 +4,36 @@ declare(strict_types = 1);
 
 namespace Sweetchuck\JunitMerger\Tests\Unit;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
 use Sweetchuck\JunitMerger\JunitMergerInterface;
 use Symfony\Component\Console\Output\BufferedOutput;
 
-abstract class JunitMergerTestBase extends Unit
+abstract class JunitMergerTestBase extends TestCase
 {
-
-    public function casesMergeXmlFiles(): array
+    protected static function getProjectRootDir(): string
     {
-        $fixturesDir = codecept_data_dir('fixtures');
+        return __DIR__ . '/../../..';
+    }
+
+    protected static function getFixturesDir(): string
+    {
+        return static::getProjectRootDir() . '/tests/fixtures';
+    }
+
+    abstract protected function createInstance(): JunitMergerInterface;
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function casesMergeXmlFiles(): array
+    {
+        $fixturesDir = static::getFixturesDir();
 
         return [
             'basic' => [
-                file_get_contents("$fixturesDir/junit-expected/a-b.xml"),
-                new \ArrayIterator([
+                'expected' => file_get_contents("$fixturesDir/junit-expected/a-b.xml"),
+                'xmlItems' => new \ArrayIterator([
                     new \SplFileObject("$fixturesDir/junit/a.xml"),
                     "$fixturesDir/junit/empty-long-new-line.xml",
                     "$fixturesDir/junit/empty-long-same-line.xml",
@@ -30,30 +45,31 @@ abstract class JunitMergerTestBase extends Unit
         ];
     }
 
-    public function casesMergeXmlStrings(): array
+    /**
+     * @return array<string, mixed>
+     */
+    public static function casesMergeXmlStrings(): array
     {
-        $cases = $this->casesMergeXmlFiles();
+        $cases = static::casesMergeXmlFiles();
         foreach ($cases as &$case) {
             $strings = [];
             /** @var string|\SplFileInfo $filename */
-            foreach ($case[1] as $filename) {
+            foreach ($case['xmlItems'] as $filename) {
                 $strings[] = file_get_contents(is_string($filename) ? $filename : $filename->getPathname());
             }
-            $case[1] = new \ArrayIterator($strings);
+            $case['xmlItems'] = new \ArrayIterator($strings);
         }
 
         return $cases;
     }
 
-    /**
-     * @dataProvider casesMergeXmlFiles
-     */
-    public function testMergeXmlFiles(string $expected, \Iterator $xmlFiles): void
+    #[DataProvider('casesMergeXmlFiles')]
+    public function testMergeXmlFiles(string $expected, \Iterator $xmlItems): void
     {
         $merger = $this->createInstance();
 
         $output = new BufferedOutput();
-        $merger->mergeXmlFiles($xmlFiles, $output);
+        $merger->mergeXmlFiles($xmlItems, $output);
 
         $eXml = new \DOMDocument();
         $eXml->formatOutput = true;
@@ -65,18 +81,16 @@ abstract class JunitMergerTestBase extends Unit
         $aXml->preserveWhiteSpace = false;
         $aXml->loadXML($output->fetch());
 
-        $this->assertSame($eXml->saveXML(), $aXml->saveXML());
+        static::assertSame($eXml->saveXML(), $aXml->saveXML());
     }
 
-    /**
-     * @dataProvider casesMergeXmlStrings
-     */
-    public function testMergeXmlStrings(string $expected, \Iterator $xmlStrings): void
+    #[DataProvider('casesMergeXmlStrings')]
+    public function testMergeXmlStrings(string $expected, \Iterator $xmlItems): void
     {
         $merger = $this->createInstance();
 
         $output = new BufferedOutput();
-        $merger->mergeXmlStrings($xmlStrings, $output);
+        $merger->mergeXmlStrings($xmlItems, $output);
 
         $eXml = new \DOMDocument();
         $eXml->formatOutput = true;
@@ -88,8 +102,6 @@ abstract class JunitMergerTestBase extends Unit
         $aXml->preserveWhiteSpace = false;
         $aXml->loadXML($output->fetch());
 
-        $this->assertSame($eXml->saveXML(), $aXml->saveXML());
+        static::assertSame($eXml->saveXML(), $aXml->saveXML());
     }
-
-    abstract protected function createInstance(): JunitMergerInterface;
 }

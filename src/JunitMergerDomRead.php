@@ -11,10 +11,7 @@ namespace Sweetchuck\JunitMerger;
 class JunitMergerDomRead extends JunitMergerBase
 {
 
-    /**
-     * {@inheritdoc}
-     */
-    public function addXmlString(string $xmlString)
+    public function addXmlString(string $xmlString): static
     {
         $xml = new \DOMDocument();
         $xml->formatOutput = true;
@@ -22,10 +19,15 @@ class JunitMergerDomRead extends JunitMergerBase
         // @todo Error handling.
         $xml->loadXML($xmlString);
         $xpath = new \DOMXPath($xml);
+        $elements = $xpath->query('/' . $this->getRootNodeName());
+        if (!$elements || $elements->count() === 0) {
+            return $this;
+        }
+
         /** @var \DOMElement $root */
-        $root = $xpath->query('/' . $this->getRootNodeName())->item(0);
+        $root = $elements->item(0);
         foreach ($root->childNodes as $childNode) {
-            $this->output->writeln($xml->saveXML($childNode));
+            $this->output->writeln($xml->saveXML($childNode) ?: '');
         }
 
         return $this;

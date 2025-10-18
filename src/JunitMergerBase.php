@@ -18,10 +18,7 @@ abstract class JunitMergerBase implements JunitMergerInterface
         return $this->rootNodeName;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setRootNodeName(string $rootNodeName)
+    public function setRootNodeName(string $rootNodeName): static
     {
         $this->rootNodeName = $rootNodeName;
 
@@ -31,7 +28,7 @@ abstract class JunitMergerBase implements JunitMergerInterface
     /**
      * {@inheritdoc}
      */
-    public function mergeXmlFiles(iterable $xmlFiles, OutputInterface $output)
+    public function mergeXmlFiles(iterable $xmlFiles, OutputInterface $output): static
     {
         return $this
             ->start($output)
@@ -42,7 +39,7 @@ abstract class JunitMergerBase implements JunitMergerInterface
     /**
      * {@inheritdoc}
      */
-    public function mergeXmlStrings(\Iterator $xmlStrings, OutputInterface $output)
+    public function mergeXmlStrings(\Iterator $xmlStrings, OutputInterface $output): static
     {
         return $this
             ->start($output)
@@ -50,10 +47,7 @@ abstract class JunitMergerBase implements JunitMergerInterface
             ->finish();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function start(OutputInterface $output)
+    public function start(OutputInterface $output): static
     {
         $this->output = $output;
 
@@ -66,7 +60,7 @@ abstract class JunitMergerBase implements JunitMergerInterface
     /**
      * {@inheritdoc}
      */
-    public function addXmlFiles(\Iterator $xmlFiles)
+    public function addXmlFiles(\Iterator $xmlFiles): static
     {
         while ($xmlFiles->valid()) {
             $this->addXmlFile($xmlFiles->current());
@@ -76,23 +70,29 @@ abstract class JunitMergerBase implements JunitMergerInterface
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function addXmlFile($xmlFile)
+    public function addXmlFile(string|\SplFileInfo $xmlFile): static
     {
-        $filename = $xmlFile instanceof \SplFileInfo ? $xmlFile->getPathname() : rtrim($xmlFile, "\r\n");
-        $filename = preg_replace(
+        $filePath = $xmlFile instanceof \SplFileInfo
+            ? $xmlFile->getPathname()
+            : rtrim($xmlFile, "\r\n");
+
+        $filePath = preg_replace(
             '@^/proc/self/fd/(?P<id>\d+)$@',
             'php://fd/$1',
-            $filename,
+            $filePath,
         );
 
-        if ($filename === '') {
+        if ($filePath === '') {
             return $this;
         }
 
-        $this->addXmlString(file_get_contents($filename));
+        $fileContent = file_get_contents($filePath);
+        if ($fileContent === false) {
+            // @todo Error logging.
+            return $this;
+        }
+
+        $this->addXmlString($fileContent);
 
         return $this;
     }
@@ -100,7 +100,7 @@ abstract class JunitMergerBase implements JunitMergerInterface
     /**
      * {@inheritdoc}
      */
-    public function addXmlStrings(\Iterator $xmlStrings)
+    public function addXmlStrings(\Iterator $xmlStrings): static
     {
         while ($xmlStrings->valid()) {
             $this->addXmlString($xmlStrings->current());
@@ -110,15 +110,9 @@ abstract class JunitMergerBase implements JunitMergerInterface
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    abstract public function addXmlString(string $xmlString);
+    abstract public function addXmlString(string $xmlString): static;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function finish()
+    public function finish(): static
     {
         $this->output->writeln('</' . $this->getRootNodeName() . '>');
 

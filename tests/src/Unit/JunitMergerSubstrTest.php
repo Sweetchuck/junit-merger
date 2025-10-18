@@ -4,12 +4,12 @@ declare(strict_types = 1);
 
 namespace Sweetchuck\JunitMerger\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Sweetchuck\JunitMerger\JunitMergerInterface;
 use Sweetchuck\JunitMerger\JunitMergerSubstr;
 
-/**
- * @covers \Sweetchuck\JunitMerger\JunitMergerSubstr<extended>
- */
+#[CoversClass(JunitMergerSubstr::class)]
 class JunitMergerSubstrTest extends JunitMergerTestBase
 {
 
@@ -21,59 +21,64 @@ class JunitMergerSubstrTest extends JunitMergerTestBase
         return new JunitMergerSubstr();
     }
 
-    public function casesDetectHeaderFooterLength(): array
+    /**
+     * @return array<string, mixed>
+     */
+    public static function casesDetectHeaderFooterLength(): array
     {
-        $dir = codecept_data_dir('fixtures/junit');
+        $fixturesDir = static::getFixturesDir();
+        $dir = "$fixturesDir/junit";
         $cases = [
             'a.xml' => [
-                [
+                'expected' => [
                     'headerLength' => 52,
                     'footerLength' => 14,
                 ],
             ],
             'empty-long-new-line.xml' => [
-                [
+                'expected' => [
                     'headerLength' => 52,
                     'footerLength' => 14
                 ],
             ],
             'empty-long-same-line.xml' => [
-                [
+                'expected' => [
                     'headerLength' => 52,
                     'footerLength' => 14,
                 ],
             ],
             'empty-short-space.xml' => [
-                [
+                'expected' => [
                     'headerLength' => 54,
                     'footerLength' => 15,
                 ],
             ],
             'empty-short-tight.xml' => [
-                [
+                'expected' => [
                     'headerLength' => 53,
                     'footerLength' => 14,
                 ],
             ],
         ];
         foreach (array_keys($cases) as $filename) {
-            $cases[$filename][1] = file_get_contents("$dir/$filename");
+            $cases[$filename]['xmlString'] = file_get_contents("$dir/$filename");
         }
 
         return $cases;
     }
 
     /**
-     * @dataProvider casesDetectHeaderFooterLength
+     * @param array<string, mixed> $expected
      */
+    #[DataProvider('casesDetectHeaderFooterLength')]
     public function testDetectHeaderFooterLength(array $expected, string $xmlString): void
     {
         $merger = $this->createInstance();
 
         $merger->detectHeaderLength($xmlString);
-        $this->assertSame($expected['headerLength'], $merger->getHeaderLength(), 'headerLength');
+        static::assertSame($expected['headerLength'], $merger->getHeaderLength(), 'headerLength');
 
         $merger->detectFooterLength($xmlString);
-        $this->assertSame($expected['footerLength'], $merger->getFooterLength(), 'footerLength');
+        static::assertSame($expected['footerLength'], $merger->getFooterLength(), 'footerLength');
     }
 }

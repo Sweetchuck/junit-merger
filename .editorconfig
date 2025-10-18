@@ -8,8 +8,14 @@ charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-[composer*.{json,lock}]
-indent_size = 4
+[{.phpstan/,phpstan}*.neon]
+indent_style = tab
 
-[*.md]
-trim_trailing_whitespace = false
+[*.{sh,bash,dash,zsh}]
+indent_style = tab
+
+[tests/fixtures/*]
+indent_style = unset
+indent_size = unset
+trim_trailing_whitespace = unset
+insert_final_newline = unset

@@ -11,56 +11,33 @@ interface JunitMergerInterface
 
     public function getRootNodeName(): string;
 
-    /**
-     * @return $this
-     */
-    public function setRootNodeName(string $rootNodeName);
+    public function setRootNodeName(string $rootNodeName): static;
 
     /**
-     * @param string[]|\SplFileInfo[]|\Iterator $xmlFiles
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     *
-     * @return $this
+     * @param \Iterator<string|\SplFileInfo> $xmlFiles
      */
-    public function mergeXmlFiles(\Iterator $xmlFiles, OutputInterface $output);
+    public function mergeXmlFiles(\Iterator $xmlFiles, OutputInterface $output): static;
 
     /**
-     * @param string[] $xmlStrings
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     *
-     * @return $this
+     * @param \Iterator<string> $xmlStrings
      */
-    public function mergeXmlStrings(\Iterator $xmlStrings, OutputInterface $output);
+    public function mergeXmlStrings(\Iterator $xmlStrings, OutputInterface $output): static;
+
+    public function start(OutputInterface $output): static;
 
     /**
-     * @return $this
+     * @param \Iterator<string|\SplFileInfo> $xmlFiles
      */
-    public function start(OutputInterface $output);
+    public function addXmlFiles(\Iterator $xmlFiles): static;
+
+    public function addXmlFile(string|\SplFileInfo $xmlFile): static;
 
     /**
-     * @return $this
+     * @param \Iterator<string> $xmlStrings
      */
-    public function addXmlFiles(\Iterator $xmlFiles);
+    public function addXmlStrings(\Iterator $xmlStrings): static;
 
-    /**
-     * @param string|\SplFileInfo $xmlFile
-     *
-     * @return $this
-     */
-    public function addXmlFile($xmlFile);
+    public function addXmlString(string $xmlString): static;
 
-    /**
-     * @return $this
-     */
-    public function addXmlStrings(\Iterator $xmlStrings);
-
-    /**
-     * @return $this
-     */
-    public function addXmlString(string $xmlString);
-
-    /**
-     * @return $this
-     */
-    public function finish();
+    public function finish(): static;
 }

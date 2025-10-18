@@ -14,10 +14,7 @@ class JunitMergerSubstr extends JunitMergerBase
         return $this->headerLength;
     }
 
-    /**
-     * @return $this
-     */
-    public function setHeaderLength(int $headerLength)
+    public function setHeaderLength(int $headerLength): static
     {
         $this->headerLength = $headerLength;
 
@@ -52,10 +49,7 @@ class JunitMergerSubstr extends JunitMergerBase
         return $this->footerLength;
     }
 
-    /**
-     * @return $this
-     */
-    public function setFooterLength(int $footerLength)
+    public function setFooterLength(int $footerLength): static
     {
         $this->footerLength = $footerLength;
 
@@ -81,7 +75,7 @@ class JunitMergerSubstr extends JunitMergerBase
         return $this->getFooterLength();
     }
 
-    public function addXmlString(string $xmlString)
+    public function addXmlString(string $xmlString): static
     {
         $this->output->write(substr(
             $xmlString,

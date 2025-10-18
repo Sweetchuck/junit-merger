@@ -18,7 +18,7 @@ class JunitMergerDomReadWrite extends JunitMergerBase
 
     protected \DOMXPath $mergedXpath;
 
-    public function start(OutputInterface $output)
+    public function start(OutputInterface $output): static
     {
         $this->output = $output;
         $this->initMerged();
@@ -26,18 +26,21 @@ class JunitMergerDomReadWrite extends JunitMergerBase
         return $this;
     }
 
-    public function finish()
+    public function finish(): static
     {
-        /** @var \DOMElement $dstRoot */
-        $dstRoot = $this->mergedXpath->query('/testsuites')->item(0);
-        $this->updateStats($dstRoot);
+        /** @var false|\DOMNodeList<\DOMElement> $elements */
+        $elements = $this->mergedXpath->query('/' . $this->getRootNodeName());
+        if ($elements && $elements->count() !== 0) {
+            $this->updateStats($elements->item(0));
+        }
 
-        $this->output->write($this->merged->saveXML());
+        // @todo Error handling.
+        $this->output->write($this->merged->saveXML() ?: '');
 
         return $this;
     }
 
-    protected function initMerged()
+    protected function initMerged(): static
     {
         $this->merged = new \DOMDocument('1.0', 'UTF-8');
         $this->merged->preserveWhiteSpace = true;
@@ -51,21 +54,30 @@ class JunitMergerDomReadWrite extends JunitMergerBase
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function addXmlString(string $xmlString)
+    public function addXmlString(string $xmlString): static
     {
         $src = new \DOMDocument();
         $src->formatOutput = true;
         $src->preserveWhiteSpace = true;
         $src->loadXML($xmlString);
         $srcXpath = new \DOMXPath($src);
-        /** @var \DOMElement $srcRoot */
-        $srcRoot = $srcXpath->query('/' . $this->getRootNodeName())->item(0);
 
-        /** @var \DOMElement $dstRoot */
-        $dstRoot = $this->mergedXpath->query('/testsuites')->item(0);
+        /** @var false|\DOMNodeList<\DOMElement> $elements */
+        $elements = $srcXpath->query('/' . $this->getRootNodeName());
+        if (!$elements || $elements->count() === 0) {
+            // @todo Error handling.
+            return $this;
+        }
+        $srcRoot = $elements->item(0);
+
+        // @todo This should be done in ::initMerged().
+        /** @var false|\DOMNodeList<\DOMElement> $elements */
+        $elements = $this->mergedXpath->query('/testsuites');
+        if (!$elements || $elements->count() === 0) {
+            // @todo Error handling.
+            return $this;
+        }
+        $dstRoot = $elements->item(0);
 
         /** @var \DOMNode $srcChild */
         foreach ($srcRoot->childNodes as $srcChild) {
@@ -92,6 +104,7 @@ class JunitMergerDomReadWrite extends JunitMergerBase
 
     protected function findChildByName(\DOMElement $parent, string $name): ?\DOMElement
     {
+        /** @var false|\DOMNodeList<\DOMElement> $list */
         $list = $this->mergedXpath->query(
             sprintf(
                 './testsuite[@name="%s"]|./testcase[@name="%s"]',
@@ -102,40 +115,47 @@ class JunitMergerDomReadWrite extends JunitMergerBase
             $parent,
         );
 
-        return $list->count() > 0 ? $list->item(0) : null;
+        return $list && $list->count() > 0
+            ? $list->item(0)
+            : null;
     }
 
-    protected function mergeSuites(\DOMElement $src, \DOMElement $dst)
+    protected function mergeSuites(\DOMElement $src, \DOMElement $dst): static
     {
-        $xpath = new \DOMXPath($src->ownerDocument);
-        /** @var \DOMElement $child */
-        foreach ($xpath->query('./testsuite|./testcase', $src) as $child) {
-            $list = $this->mergedXpath->query(
+        $srcXpath = new \DOMXPath($src->ownerDocument);
+        /** @var false|\DOMNodeList<\DOMElement> $srcElements */
+        $srcElements = $srcXpath->query('./testsuite|./testcase', $src);
+        if (!$srcElements) {
+            return $this;
+        }
+
+        foreach ($srcElements as $srcChild) {
+            /** @var false|\DOMNodeList<\DOMElement> $dstList */
+            $dstList = $this->mergedXpath->query(
                 sprintf(
                     './%s[@name="%s"]',
-                    $child->tagName,
-                    $child->getAttribute('name'),
+                    $srcChild->tagName,
+                    $srcChild->getAttribute('name'),
                 ),
                 $dst,
             );
 
-            if ($list->count() === 0) {
-                $clone = $dst->ownerDocument->importNode($child, true);
+            if (!$dstList || $dstList->count() === 0) {
+                $clone = $dst->ownerDocument->importNode($srcChild, true);
                 $dst->appendChild($clone);
 
                 continue;
             }
 
-            /** @var \DOMElement $dstChild */
-            $dstChild = $list->item(0);
+            $dstChild = $dstList->item(0);
 
-            if ($child->tagName === 'testsuite') {
-                $this->mergeSuites($child, $dstChild);
+            if ($srcChild->tagName === 'testsuite') {
+                $this->mergeSuites($srcChild, $dstChild);
             }
 
-            if ($child->tagName === 'testcase') {
+            if ($srcChild->tagName === 'testcase') {
                 $dstChild->remove();
-                $clone = $dst->ownerDocument->importNode($child, true);
+                $clone = $dst->ownerDocument->importNode($srcChild, true);
                 $dst->appendChild($clone);
             }
         }
@@ -143,7 +163,7 @@ class JunitMergerDomReadWrite extends JunitMergerBase
         return $this;
     }
 
-    protected function updateStats(\DOMElement $suite)
+    protected function updateStats(\DOMElement $suite): static
     {
         $stats = [
             'tests' => 0,
@@ -163,37 +183,44 @@ class JunitMergerDomReadWrite extends JunitMergerBase
         ];
 
         $children = $this->mergedXpath->query('./testsuite', $suite);
-        /** @var \DOMElement $child */
-        foreach ($children as $child) {
-            $this->updateStats($child);
+        if ($children) {
+            /** @var \DOMElement $child */
+            foreach ($children as $child) {
+                $this->updateStats($child);
 
-            foreach (array_keys($stats) as $attrName) {
-                if (!$child->hasAttribute($attrName)) {
-                    continue;
+                foreach (array_keys($stats) as $attrName) {
+                    if (!$child->hasAttribute($attrName)) {
+                        continue;
+                    }
+
+                    $value = $child->getAttribute($attrName);
+                    settype($value, $attrName === 'time' ? 'float' : 'integer');
+                    $stats[$attrName] += $value;
                 }
-
-                $value = $child->getAttribute($attrName);
-                settype($value, $attrName === 'time' ? 'float' : 'integer');
-                $stats[$attrName] += $value;
             }
         }
 
         $children = $this->mergedXpath->query('./testcase', $suite);
-        /** @var \DOMElement $child */
-        foreach ($children as $child) {
-            $stats['tests']++;
+        if ($children) {
+            /** @var \DOMElement $child */
+            foreach ($children as $child) {
+                $stats['tests']++;
 
-            if ($child->hasAttribute('assertions')) {
-                $stats['assertions'] += (int) $child->getAttribute('assertions');
-            }
+                if ($child->hasAttribute('assertions')) {
+                    $stats['assertions'] += (int) $child->getAttribute('assertions');
+                }
 
-            if ($child->hasAttribute('time')) {
-                $stats['time'] += (float) $child->getAttribute('time');
-            }
+                if ($child->hasAttribute('time')) {
+                    $stats['time'] += (float) $child->getAttribute('time');
+                }
 
-            foreach ($resultAttributes as $attrName => $xpathQuery) {
-                $list = $this->mergedXpath->query($xpathQuery, $child);
-                $stats[$attrName] += $list->count();
+                foreach ($resultAttributes as $attrName => $xpathQuery) {
+                    $list = $this->mergedXpath->query($xpathQuery, $child);
+                    if (!$list) {
+                        continue;
+                    }
+                    $stats[$attrName] += $list->count();
+                }
             }
         }
 

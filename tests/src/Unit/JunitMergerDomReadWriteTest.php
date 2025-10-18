@@ -4,12 +4,11 @@ declare(strict_types = 1);
 
 namespace Sweetchuck\JunitMerger\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Sweetchuck\JunitMerger\JunitMergerDomReadWrite;
 use Sweetchuck\JunitMerger\JunitMergerInterface;
 
-/**
- * @covers \Sweetchuck\JunitMerger\JunitMergerDomReadWrite<extended>
- */
+#[CoversClass(JunitMergerDomReadWrite::class)]
 class JunitMergerDomReadWriteTest extends JunitMergerTestBase
 {
 
@@ -18,14 +17,17 @@ class JunitMergerDomReadWriteTest extends JunitMergerTestBase
         return new JunitMergerDomReadWrite();
     }
 
-    public function casesMergeXmlFiles(): array
+    /**
+     * @return array<string, mixed>
+     */
+    public static function casesMergeXmlFiles(): array
     {
-        $fixturesDir = codecept_data_dir('fixtures');
+        $fixturesDir = static::getFixturesDir();
         $cases = parent::casesMergeXmlFiles();
-        $cases['basic'][0] = file_get_contents("$fixturesDir/junit-expected/a-b-DocReadWrite.xml");
+        $cases['basic']['expected'] = file_get_contents("$fixturesDir/junit-expected/a-b-DocReadWrite.xml");
         $cases['merge-01-01'] = [
-            file_get_contents("$fixturesDir/junit-expected/merge-01-01.xml"),
-            new \ArrayIterator([
+            'expected' => file_get_contents("$fixturesDir/junit-expected/merge-01-01.xml"),
+            'xmlItems' => new \ArrayIterator([
                 "$fixturesDir/junit/merge-01-01-01.xml",
                 "$fixturesDir/junit/merge-01-01-02.xml",
             ]),

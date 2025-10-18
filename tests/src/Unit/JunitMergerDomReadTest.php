@@ -4,12 +4,11 @@ declare(strict_types = 1);
 
 namespace Sweetchuck\JunitMerger\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Sweetchuck\JunitMerger\JunitMergerDomRead;
 use Sweetchuck\JunitMerger\JunitMergerInterface;
 
-/**
- * @covers \Sweetchuck\JunitMerger\JunitMergerDomRead<extended>
- */
+#[CoversClass(JunitMergerDomRead::class)]
 class JunitMergerDomReadTest extends JunitMergerTestBase
 {
 
